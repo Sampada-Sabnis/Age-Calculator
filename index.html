@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Calculate exactly how long you have lived in days, hours, and minutes.">
+  <title>Age in Days/Hours Calculation</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #63707c;
+      --paper: #f7f4ed;
+      --panel: #fffdf8;
+      --line: #d9d4c8;
+      --accent: #0b7285;
+      --accent-dark: #075766;
+      --accent-soft: #d9f0ef;
+      --warm: #e58f65;
+      --shadow: 0 20px 60px rgba(36, 51, 55, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      display: block;
+      height: 9px;
+      background: linear-gradient(90deg, var(--accent) 0 72%, var(--warm) 72% 100%);
+    }
+
+    .shell {
+      width: min(100% - 32px, 920px);
+      margin: 0 auto;
+      padding: 58px 0 72px;
+    }
+
+    .intro { max-width: 680px; margin-bottom: 30px; }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent-dark);
+      font: 700 0.78rem/1.2 Arial, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 620px;
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 400;
+      letter-spacing: 0;
+      line-height: 0.98;
+    }
+
+    .lede {
+      max-width: 560px;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font: 1.08rem/1.6 Arial, sans-serif;
+    }
+
+    .calculator {
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      gap: 0;
+      overflow: hidden;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .form-panel, .result-panel { padding: clamp(24px, 5vw, 48px); }
+    .form-panel { border-right: 1px solid var(--line); }
+    .result-panel { background: var(--accent-soft); }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: 1.55rem;
+      font-weight: 400;
+    }
+
+    .panel-copy {
+      margin: 0 0 28px;
+      color: var(--muted);
+      font: 0.94rem/1.5 Arial, sans-serif;
+    }
+
+    .field { margin-bottom: 20px; }
+    .time-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.9fr;
+      gap: 8px;
+    }
+
+    .time-field label {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font: 700 0.88rem/1.3 Arial, sans-serif;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 13px;
+      border: 1px solid #b9b3a7;
+      border-radius: 2px;
+      background: #fff;
+      color: var(--ink);
+      font: 1rem Arial, sans-serif;
+    }
+
+    select { appearance: auto; }
+
+    input:focus-visible, button:focus-visible {
+      outline: 3px solid var(--warm);
+      outline-offset: 3px;
+    }
+
+    button {
+      width: 100%;
+      min-height: 50px;
+      margin-top: 5px;
+      border: 0;
+      border-radius: 2px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font: 700 0.95rem Arial, sans-serif;
+      transition: background 160ms ease, transform 160ms ease;
+    }
+
+    button:hover { background: var(--accent-dark); }
+    button:active { transform: translateY(1px); }
+
+    .result-panel { display: flex; flex-direction: column; justify-content: center; min-height: 390px; }
+    .result-panel h2 { color: var(--accent-dark); }
+
+    .result-status {
+      min-height: 27px;
+      margin: 0 0 18px;
+      color: var(--muted);
+      font: 0.9rem Arial, sans-serif;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .metric {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      min-width: 0;
+      padding: 12px 14px;
+      background: var(--panel);
+      border-left: 4px solid var(--accent);
+    }
+
+    .metric-value {
+      display: block;
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font: 700 clamp(1.7rem, 4vw, 2.8rem)/1 Arial, sans-serif;
+    }
+
+    .metric-label {
+      display: block;
+      margin-top: 0;
+      color: var(--muted);
+      font: 0.76rem Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .precision-note {
+      margin: 24px 0 0;
+      color: var(--muted);
+      font: 0.82rem/1.5 Arial, sans-serif;
+    }
+
+    @media (max-width: 700px) {
+      .shell { padding-top: 42px; }
+      .calculator { grid-template-columns: 1fr; }
+      .form-panel { border-right: 0; border-bottom: 1px solid var(--line); }
+      .result-panel { min-height: 330px; }
+      .metrics { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 430px) {
+      .shell { width: min(100% - 24px, 920px); }
+      .metrics { gap: 8px; }
+      .metric { padding: 12px 9px; }
+      .metric-value { font-size: 1.45rem; }
+      .metric-label { font-size: 0.68rem; letter-spacing: 0.04em; }
+      input, select, button { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="intro">
+      <p class="eyebrow">A little perspective</p>
+      <h1>Age in days, hours, and minutes.</h1>
+      <p class="lede">Enter when you were born and measure your life in the units that make every minute count.</p>
+    </header>
+
+    <section class="calculator" aria-label="Age calculator">
+      <form class="form-panel" id="age-form">
+        <h2>Your beginning</h2>
+        <p class="panel-copy">Use your local time for the most precise result.</p>
+
+        <div class="field">
+          <label for="birth-date">Date of birth</label>
+          <input id="birth-date" name="birth-date" type="date" required>
+        </div>
+
+        <div class="field">
+          <label>Time of birth <span aria-hidden="true">(optional)</span></label>
+          <div class="time-fields">
+            <div class="time-field">
+              <label for="birth-hour">Hour</label>
+              <input id="birth-hour" name="birth-hour" type="number" min="1" max="12" value="12" inputmode="numeric">
+            </div>
+            <div class="time-field">
+              <label for="birth-minute">Minute</label>
+              <input id="birth-minute" name="birth-minute" type="number" min="0" max="59" value="00" inputmode="numeric">
+            </div>
+            <div class="time-field">
+              <label for="birth-period">Period</label>
+              <select id="birth-period" name="birth-period">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit">Calculate my lived time</button>
+      </form>
+
+      <section class="result-panel" aria-labelledby="result-heading" aria-live="polite">
+        <h2 id="result-heading">Your lived time</h2>
+        <p class="result-status" id="result-status">Enter your details to begin.</p>
+          <div class="metrics" aria-label="Elapsed time">
+            <div class="metric">
+              <span class="metric-label">Days</span>
+              <span class="metric-value" id="days">—</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Hours</span>
+              <span class="metric-value" id="hours">—</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Minutes</span>
+              <span class="metric-value" id="minutes">—</span>
+            </div>
+            <div class="metric">
+              <span class="metric-label">Seconds</span>
+              <span class="metric-value" id="seconds">—</span>
+            </div>
+        </div>
+        <p class="precision-note">The totals keep running from the current moment.</p>
+      </section>
+    </section>
+  </main>
+  <script src="script.js"></script>
+</body>
+</html>
